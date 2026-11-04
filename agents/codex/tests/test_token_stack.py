@@ -68,7 +68,11 @@ class TokenStackTest(unittest.TestCase):
         self.assertNotIn("filesystem", config["permissions"]["workspace-only"])
         hooks = json.loads(first_hooks)
         self.assertIn("keep-me", json.dumps(hooks))
-        self.assertIn("rtk-codex-hook.py", json.dumps(hooks))
+        rtk = hooks["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
+        # Stable path: a repository move must not change the trusted hook hash.
+        self.assertEqual(
+            rtk, f"python3 {self.home}/.agents/skills/token-stack/scripts/rtk-codex-hook.py"
+        )
         self.assertTrue((self.home / ".codex/AGENTS.md").is_symlink())
         self.assertTrue((self.home / ".agents/skills/token-stack").is_symlink())
 

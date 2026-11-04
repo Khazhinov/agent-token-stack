@@ -2,7 +2,7 @@
 
 ## RTK
 
-Binary shared with Claude: `~/.local/bin/rtk`. Codex PreToolUse calls `scripts/rtk-codex-hook.py`: RTK 0.49.0 still uses its `hook claude` handler, and the adapter adds the `permissionDecision: allow` field Codex requires. After a hook change a new session may ask to trust the new hash in `/hooks`. RTK is experimental: shorter tool output is not the same as fewer tokens or a cheaper finished task; judge it only by an A/B run on your own work.
+Binary shared with Claude: `~/.local/bin/rtk`. Codex PreToolUse calls `scripts/rtk-codex-hook.py`: RTK 0.49.0 still uses its `hook claude` handler, and the adapter adds the `permissionDecision: allow` field Codex requires. The hook command uses the stable skill link `~/.agents/skills/token-stack`, not the repository path: Codex trusts a hook by its command hash, and a repository move must not trigger a new review. Any other change of the command still asks once to trust the new hash. RTK is experimental: shorter tool output is not the same as fewer tokens or a cheaper finished task; judge it only by an A/B run on your own work.
 
 Checks: `rtk --version`, `rtk hook check 'rg --files'`, `python3 scripts/manage.py doctor`. Do not skip the `rg --files` check: RTK 0.42.4 wrongly rewrote it to `rtk grep --files`.
 

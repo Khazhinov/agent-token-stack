@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 - 2026-11-04
+
+- Codex: the RTK hook command goes through the skill link `~/.agents/skills/token-stack`; moving the
+  repository no longer makes Codex ask to review hooks again.
+
 ## 0.2.0 - 2026-11-04
 
 - OpenCode: `install.sh`, `verify.sh`, plugin copies (RTK, Caveman, Ponytail), Caveman skill and

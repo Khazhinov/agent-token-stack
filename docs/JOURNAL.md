@@ -81,3 +81,7 @@ details stay in `local/JOURNAL.md`.
   absolute path.
 - `codex sandbox -- /bin/true` fails when started from inside a Codex session; the check is run from
   an ordinary terminal.
+- After the move every new Codex worker stopped at "Hooks need review": Codex keys hook trust by the
+  file and position of the hook and compares the hash of its command, and the command contained the
+  repository path. The command now goes through the skill link, which follows the repository when it
+  moves; the trusted hash stays valid.

@@ -278,13 +278,16 @@ def update_config(layout: Layout, *, native: bool | None, cbm: bool | None) -> N
     write_text(layout.config, text)
 
 
-def rtk_entry() -> dict:
+def rtk_entry(layout: Layout) -> dict:
+    # Through the skill symlink: Codex trusts a hook by its command hash, so a
+    # repository move must not change the command.
+    script = layout.skill / "scripts/rtk-codex-hook.py"
     return {
         "matcher": "^Bash$",
         "hooks": [
             {
                 "type": "command",
-                "command": f"python3 {REPO}/skills/token-stack/scripts/rtk-codex-hook.py",
+                "command": f"python3 {script}",
                 "timeout": 10,
                 "statusMessage": "Optimizing command output with RTK",
             }
@@ -306,7 +309,7 @@ def update_hooks(layout: Layout, enabled: bool) -> None:
     pre = hooks.setdefault("PreToolUse", [])
     hooks["PreToolUse"] = [entry for entry in pre if not has_rtk(entry)]
     if enabled:
-        hooks["PreToolUse"].append(rtk_entry())
+        hooks["PreToolUse"].append(rtk_entry(layout))
     if not hooks["PreToolUse"]:
         hooks.pop("PreToolUse")
     write_text(layout.hooks, json.dumps(data, ensure_ascii=False, indent=2) + "\n")

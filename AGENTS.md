@@ -22,7 +22,7 @@ Follow [docs/SETUP.md](docs/SETUP.md). Per agent:
 |---|---|---|
 | Codex | `agents/codex/install.sh` (runs `manage.py install` and `doctor`) | `manage.py status`, `manage.py doctor` |
 | Claude Code | link `agents/claude-code/skills/stack` to `~/.claude/skills/stack` | `/stack`, `toggle.py normalize` |
-| OpenCode | [agents/opencode/README.md](agents/opencode/README.md) | `opencode debug config` |
+| OpenCode | `agents/opencode/install.sh`, then merge the stack keys of `opencode.example.json` ([agents/opencode/README.md](agents/opencode/README.md)) | `agents/opencode/verify.sh` |
 
 Back up every file you change. Never print secrets. Never delete shared caches
 (`~/.cache/codebase-memory-mcp`) or shared binaries.

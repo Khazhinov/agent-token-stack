@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 - 2026-11-04
+
+- OpenCode: `install.sh`, `verify.sh`, plugin copies (RTK, Caveman, Ponytail), Caveman skill and
+  `AGENTS.stack.md` loaded through `instructions`.
+- Global rules of every agent carry a short stack notice; agents suggest switches, the person runs them.
+- Claude Code `RULES.md`: structural read rule, Ponytail and GSD rules.
+- Troubleshooting: `codex sandbox` inside a Codex session, relative OpenCode `instructions`.
+
 ## 0.1.0 - 2026-11-03
 
 - First public version: stack description, setup and update procedures, decisions, journal,

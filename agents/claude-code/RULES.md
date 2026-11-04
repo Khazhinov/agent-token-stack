@@ -15,3 +15,18 @@
   settings by hand.
 - Shared binaries (RTK, CBM) and the CBM index cache belong to every agent on the machine: update
   them from one agent at a time, never delete the cache.
+- Do not read a whole file with Read or cat to answer a structural question about code: use
+  `get_code_snippet` or `search_graph`.
+
+## Ponytail
+
+- The `ponytail@ponytail` plugin injects its rules into the session and every subagent;
+  `/ponytail-review` checks the current diff, `/ponytail-audit` the repository. `mode doc` turns it off.
+- Ponytail does not replace questions: ambiguous requirements are still resolved by asking, not by a
+  simpler default. Tasks without code (documents, prose) are outside its scope.
+- GSD projects (`.planning/`): the planner applies the ladder when forming plan tasks; a task that
+  duplicates existing code, the standard library or an installed dependency is a plan defect. An
+  approved `PLAN.md` is explicitly requested work: the executor implements every task with minimal
+  code, does not shrink the plan and records redundancy in SUMMARY as a deviation. Tests required by
+  the plan, `tdd_mode` or `nyquist_validation` are explicitly requested. Code review of a phase adds
+  `/ponytail-review` of its diff.

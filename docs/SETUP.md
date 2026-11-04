@@ -39,7 +39,8 @@ README of the tool: supported environments change between versions.
 **Codex:** run `agents/codex/install.sh`. It links `~/.codex/AGENTS.md` and the `token-stack` skill,
 merges the managed blocks into `~/.codex/config.toml` (keeping the model, trust and other settings),
 adds the RTK hook to `~/.codex/hooks.json` and runs `doctor`. Local rules for this machine go to
-`local/codex/AGENTS.md`; `install` appends them to the global file. Details:
+`local/codex/AGENTS.md`; with that file `install` writes public plus local rules to `~/.codex/AGENTS.md`
+instead of linking it. Details:
 [agents/codex/README.md](../agents/codex/README.md).
 
 **Claude Code:** link `agents/claude-code/skills/stack` to `~/.claude/skills/stack`, add the rules
@@ -47,7 +48,9 @@ from [agents/claude-code/RULES.md](../agents/claude-code/RULES.md) to `~/.claude
 (or import them with `@<path>`), install the plugins you choose and run `/stack normalize`, then
 `/stack`. Details: [agents/claude-code/README.md](../agents/claude-code/README.md).
 
-**OpenCode:** follow [agents/opencode/README.md](../agents/opencode/README.md).
+**OpenCode:** run `agents/opencode/install.sh`, merge the stack keys of `opencode.example.json` into the
+global `opencode.json` (keep the model and provider settings), then run `agents/opencode/verify.sh`.
+Details: [agents/opencode/README.md](../agents/opencode/README.md).
 
 **Several agents:** shared binaries and the CBM cache are updated by one agent at a time; settings,
 hooks and plugins are switched per agent. Check independence: record the state of every agent and of

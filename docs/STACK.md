@@ -108,6 +108,7 @@ Several agents on one machine share some things and must not share others.
 | `~/.cache/codebase-memory-mcp` | shared | indexes and daemon state; never delete; never index one project from two agents at once |
 | `~/.tokeneconomizer/config.json` | shared | changed only in agreement for all agents; each agent switches only its own plugin |
 | Headroom, context-mode, Caveman | per agent | never add their provider, env, hooks or MCP to another agent's configuration |
+| Ponytail | per agent | Claude Code and OpenCode: plugin; Codex: compact rules in `AGENTS.md`. Do not install the plugin in Codex: its hooks duplicate those rules |
 
 Switches are independent: turning RTK off for Claude must not turn it off for Codex, and the
 reverse. Shared are only the binaries and the index data.

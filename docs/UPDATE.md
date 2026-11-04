@@ -28,7 +28,7 @@ No new commits: the stack is current. Otherwise read the new entries of `CHANGEL
 |---|---|---|
 | Codex | `python3 agents/codex/skills/token-stack/scripts/manage.py install` | `manage.py doctor`, new Codex session |
 | Claude Code | `/stack normalize` (the skill is a link into the repository, so it is already current) | `/stack`, restart if marked |
-| OpenCode | the steps of the changed part of [agents/opencode/README.md](../agents/opencode/README.md) | `opencode debug config` |
+| OpenCode | `agents/opencode/install.sh`, then the changed steps of [agents/opencode/README.md](../agents/opencode/README.md) | `agents/opencode/verify.sh` |
 
 4. Shared binaries (RTK, CBM) change only when their pin changed; follow the coordinated update in
    [STACK.md](STACK.md), section 4.

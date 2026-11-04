@@ -2,11 +2,15 @@
 
 These rules apply to every Codex model. Their source is `agents/codex` of the agent-token-stack repository; the `token-stack` skill manages the global installation. Change the shared configuration in the repository first, then run `python3 ~/.agents/skills/token-stack/scripts/manage.py install`.
 
+## Token optimization stack
+
+This machine runs a token optimization stack across its agents. It changes command output, the tool set and reply style. The source of truth is this repository's `AGENTS.md`; machine state is in `local/`. The absolute repository path is in the appended local rules.
+
+If a stack component gets in the way of a task, or one could help, tell the person and name the switch command: `python3 ~/.agents/skills/token-stack/scripts/manage.py on|off rtk|cbm|native|te|all`. Do not switch, install or update stack components without an explicit command from the person.
+
 Write compactly and start with the result. Do not shorten code, commands, paths, diagnostics and document content where precision matters more than length.
 
 When exploring a codebase, start with `codebase-memory` (`index_status`, then `search_graph`, `get_architecture` or `trace_path`) if the MCP server is available and the project is indexed. Confirm exact details with `rg` and minimal file ranges. Without MCP use `codebase-memory-mcp cli <tool> '<json>'`; a missing index must not stop the task.
-
-Work with files outside the current project only when the user explicitly asks and names the folder or file. This applies to reading and to changes; do not treat neighbouring folders as allowed by default. If the target is unclear, ask before touching external files.
 
 Prefer RTK for noisy commands (`rtk git`, `rtk test`, `rtk pytest`, `rtk read`, `rtk grep`, `rtk log`, `rtk json`). Do not use RTK where the full verbatim output is needed. The global hook usually rewrites suitable Bash commands automatically.
 

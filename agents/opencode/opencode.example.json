@@ -8,5 +8,6 @@
     "context-mode",
     "./plugins/caveman/plugin.js",
     "./plugins/ponytail/.opencode/plugins/ponytail.mjs"
-  ]
+  ],
+  "instructions": ["/absolute/path/to/agent-token-stack/agents/opencode/AGENTS.stack.md"]
 }

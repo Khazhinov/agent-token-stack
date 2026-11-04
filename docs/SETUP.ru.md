@@ -39,7 +39,8 @@
 **Codex:** запустить `agents/codex/install.sh`. Он связывает `~/.codex/AGENTS.md` и скилл `token-stack`,
 объединяет управляемые блоки с `~/.codex/config.toml` (модель, доверие и прочие настройки сохраняются),
 добавляет hook RTK в `~/.codex/hooks.json` и выполняет `doctor`. Локальные правила машины - в
-`local/codex/AGENTS.md`, `install` дописывает их к глобальному файлу. Подробности:
+`local/codex/AGENTS.md`; при его наличии `install` записывает в `~/.codex/AGENTS.md` публичные правила
+и следом локальные вместо ссылки. Подробности:
 [agents/codex/README.ru.md](../agents/codex/README.ru.md).
 
 **Claude Code:** связать `agents/claude-code/skills/stack` с `~/.claude/skills/stack`, добавить правила
@@ -47,7 +48,9 @@
 импортировать через `@<путь>`), установить выбранные плагины и выполнить `/stack normalize`, затем
 `/stack`. Подробности: [agents/claude-code/README.ru.md](../agents/claude-code/README.ru.md).
 
-**OpenCode:** по [agents/opencode/README.ru.md](../agents/opencode/README.ru.md).
+**OpenCode:** запустить `agents/opencode/install.sh`, перенести ключи стека из `opencode.example.json` в
+глобальный `opencode.json` (модель и провайдеры сохраняются), затем выполнить `agents/opencode/verify.sh`.
+Подробности: [agents/opencode/README.ru.md](../agents/opencode/README.ru.md).
 
 **Несколько агентов:** общие бинарники и кэш CBM обновляет один агент за раз; настройки, hooks и
 плагины переключаются у каждого агента отдельно. Проверка независимости: записать состояние каждого

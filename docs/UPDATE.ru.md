@@ -27,7 +27,7 @@ cat <repo>/VERSION; git -C <repo> show origin/main:VERSION
 |---|---|---|
 | Codex | `python3 agents/codex/skills/token-stack/scripts/manage.py install` | `manage.py doctor`, новая сессия Codex |
 | Claude Code | `/stack normalize` (скилл - ссылка в репозиторий, поэтому уже актуален) | `/stack`, перезапуск, если помечен |
-| OpenCode | шаги изменённой части [agents/opencode/README.ru.md](../agents/opencode/README.ru.md) | `opencode debug config` |
+| OpenCode | `agents/opencode/install.sh`, затем изменённые шаги [agents/opencode/README.ru.md](../agents/opencode/README.ru.md) | `agents/opencode/verify.sh` |
 
 4. Общие бинарники (RTK, CBM) меняются, только если изменился их pin; порядок - согласованное
    обновление в [STACK.ru.md](STACK.ru.md), раздел 4.

@@ -68,3 +68,16 @@ details stay in `local/JOURNAL.md`.
   absolute. The Codex installer follows both conventions.
 - The stack moved into this repository: one public description with examples and reasons for every
   agent, machine specifics in the git-ignored `local/`.
+
+## 2026-11-04 - all agents run the stack from this repository
+
+- Each agent moved its stack part here: the Claude Code `stack` skill is linked from
+  `agents/claude-code`, its switcher state stays next to it and is git-ignored; Codex installs from
+  `agents/codex`; OpenCode got an installer, a verifier, plugin copies and an instructions file.
+  The former per-agent folders keep only settings unrelated to the stack.
+- Every agent's global rules got a short notice: a stack exists, where it is described, which
+  command switches a component, and that the agent only suggests a switch and never switches by itself.
+- OpenCode resolves relative `instructions` paths from the working directory; the global file uses an
+  absolute path.
+- `codex sandbox -- /bin/true` fails when started from inside a Codex session; the check is run from
+  an ordinary terminal.

@@ -1,0 +1,28 @@
+# Managed by skills/token-stack/scripts/manage.py.
+# Root keys are inserted before user tables; permissions and MCP blocks are appended.
+tool_output_token_limit = 10000
+project_doc_max_bytes = 16384
+default_permissions = "workspace-only"
+approval_policy = "on-request"
+approvals_reviewer = "auto_review"
+auto_review.extra_policy = '''
+For filesystem actions outside the current workspace, approve only when the user explicitly requested work in that directory or path. Do not infer authorization from convenience or proximity to the workspace. Keep any approval limited to the requested path and action. Deny ambiguous or unrelated access and ask the user to specify the target. Apply the default reviewer safety policy as well.
+'''
+
+[features]
+hooks = true
+
+[permissions.workspace-only]
+extends = ":workspace"
+
+# Generated from Claude Code's denied read paths (~/.claude/settings.json);
+# the whole file system is readable otherwise, as for Claude.
+[permissions.workspace-only.filesystem]
+"~/.config/mcp-secrets" = "deny"
+
+[mcp_servers.codebase-memory]
+command = "codebase-memory-mcp"  # manage.py writes the resolved absolute path
+enabled = true
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+enabled_tools = ["index_status", "index_repository", "detect_changes", "search_graph", "get_architecture", "trace_path", "get_code_snippet", "search_code"]

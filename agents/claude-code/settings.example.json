@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(~/.config/secrets/**)",
+      "Edit(~/.config/secrets/**)",
+      "Read(//srv/app/.env)"
+    ]
+  },
+  "sandbox": {
+    "filesystem": {
+      "denyRead": [
+        "~/.config/secrets/**",
+        "/srv/app/.env"
+      ]
+    }
+  },
+  "enabledPlugins": {
+    "context-mode@context-mode": true,
+    "caveman@caveman": true,
+    "ponytail@ponytail": true,
+    "tokeneconomizer@tokeneconomizer": true
+  },
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.anthropic.com"
+  }
+}

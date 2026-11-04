@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "auto": true,
+    "prune": true
+  },
+  "plugin": [
+    "context-mode",
+    "./plugins/caveman/plugin.js",
+    "./plugins/ponytail/.opencode/plugins/ponytail.mjs"
+  ]
+}

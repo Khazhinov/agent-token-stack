@@ -1,0 +1,4 @@
+interface:
+  display_name: "Token Stack"
+  short_description: "Codex context economy stack control"
+  default_prompt: "Show the status of the Codex token optimization stack."

@@ -1,0 +1,6 @@
+# Machine-specific part: never published (see local.example/).
+/local/
+# Runtime state of the Claude stack switcher.
+agents/claude-code/skills/stack/stash.json
+__pycache__/
+*.py[cod]

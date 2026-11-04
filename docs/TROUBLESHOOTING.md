@@ -4,6 +4,7 @@ English | [Русский](TROUBLESHOOTING.ru.md)
 
 | Problem | Symptom | Fix |
 |---|---|---|
+| Codex asks to review hooks after the stack moved | start screen "Hooks need review: 1 hook is new or changed" | the RTK hook command path changed; Codex trusts hooks by hash. Choose "Trust all and continue" once after checking `~/.codex/hooks.json`; an unattended worker waits on this screen |
 | `codex sandbox` fails inside a Codex session | `error building bubblewrap command: app-server socket directory must be a user-owned directory with mode 0700`, while the same command passes in an ordinary shell | the check ran inside Codex's own sandbox; run `manage.py doctor` and the Codex tests from a normal terminal, not from a Codex tool call |
 | OpenCode global instructions do not load | rules from `instructions` of `~/.config/opencode/opencode.json` are missing in sessions started in other folders | relative `instructions` paths resolve from the working directory, not the config directory; use an absolute path |
 | Codex permission profile hides the Codex binary | every shell command fails with `bwrap: execvp <home>/.codex/packages/.../codex: No such file or directory`; the agent stops without a result | do not deny `":root"` in the profile; deny only secret paths, or allow reading the Codex installation. Check: `codex sandbox -- /bin/true`. Do not "fix" it with `-s workspace-write`: the legacy mode replaces the profile and opens every file for reading |

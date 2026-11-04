@@ -4,6 +4,7 @@
 
 | Проблема | Признак | Решение |
 |---|---|---|
+| Codex просит проверить hooks после переноса стека | экран запуска «Hooks need review: 1 hook is new or changed» | изменился путь команды hook RTK; Codex доверяет hooks по хэшу. Один раз выбрать «Trust all and continue», проверив `~/.codex/hooks.json`; исполнитель без человека ждёт на этом экране |
 | `codex sandbox` падает внутри сессии Codex | `error building bubblewrap command: app-server socket directory must be a user-owned directory with mode 0700`, хотя та же команда в обычной оболочке проходит | проверка запущена внутри песочницы самого Codex; `manage.py doctor` и тесты Codex запускать из обычного терминала, а не вызовом инструмента Codex |
 | Глобальные инструкции OpenCode не загружаются | правила из `instructions` файла `~/.config/opencode/opencode.json` отсутствуют в сессиях, запущенных в других папках | относительные пути `instructions` отсчитываются от рабочего каталога, а не от каталога конфигурации; указывать абсолютный путь |
 | Профиль прав Codex скрывает бинарник Codex | любая команда оболочки падает с `bwrap: execvp <home>/.codex/packages/.../codex: No such file or directory`; агент останавливается без результата | не запрещать `":root"` в профиле; запрещать только пути секретов либо разрешить чтение установки Codex. Проверка: `codex sandbox -- /bin/true`. Не «исправлять» через `-s workspace-write`: старый режим заменяет профиль и открывает чтение всех файлов |

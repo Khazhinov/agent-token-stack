@@ -1,5 +1,9 @@
 # Agent entry point
 
+Any agent runtime: this file is the single source of instructions. Runtimes that read another
+file name get a one-line shim (`CLAUDE.md` contains `@AGENTS.md`); if yours reads neither, read this
+file first and treat it as binding.
+
 ## Publication safety (mandatory, read first)
 
 This repository is public. Every agent working here, including one that only installs or configures something, keeps
@@ -39,6 +43,14 @@ Follow [docs/SETUP.md](docs/SETUP.md). Per agent:
 | Codex | `agents/codex/install.sh` (runs `manage.py install` and `doctor`) | `manage.py status`, `manage.py doctor` |
 | Claude Code | link `agents/claude-code/skills/stack` to `~/.claude/skills/stack` | `/stack`, `toggle.py normalize` |
 | OpenCode | `agents/opencode/install.sh`, then merge the stack keys of `opencode.example.json` ([agents/opencode/README.md](agents/opencode/README.md)) | `agents/opencode/verify.sh` |
+
+Another runtime (Gemini CLI, Cursor, Aider, a future agent): the stack is a set of layers, not of
+products. For each layer of [docs/STACK.md](docs/STACK.md) find the runtime's own mechanism (hook or
+plugin before a shell command, project-level MCP config, output limits, instruction file), confirm it
+in the runtime's current documentation, then create `agents/<runtime>/` with `README.md` and
+`README.ru.md` (wiring, a "why" table, checks), examples without machine values, and a column in the
+STACK tables. Never copy one runtime's config into another; shared binaries and caches follow
+"Shared machine" in STACK.
 
 Back up every file you change. Never print secrets. Never delete shared caches
 (`~/.cache/codebase-memory-mcp`) or shared binaries.

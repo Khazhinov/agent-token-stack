@@ -15,6 +15,10 @@ hooks = true
 [permissions.workspace-only]
 extends = ":workspace"
 
+# Network on, as for Claude Code Bash: local Unix sockets (herdr-core, Docker) need it.
+[permissions.workspace-only.network]
+enabled = true
+
 # Generated from Claude Code's denied read paths (~/.claude/settings.json);
 # the whole file system is readable otherwise, as for Claude.
 [permissions.workspace-only.filesystem]

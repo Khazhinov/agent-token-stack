@@ -233,12 +233,16 @@ def claude_read_denies(home: Path) -> list[str]:
 def permissions_block(home: Path) -> str:
     """Same as Claude Code: the whole file system is readable except Claude's
     denied paths, writes stay in the workspace, auto_review judges the rest.
+    Network is on, as for Claude's Bash: without it commands cannot reach local
+    Unix sockets either (herdr-core `hc`, Docker) and fail with EPERM.
     No ":root" deny: Codex runs its own binary from ~/.codex/packages inside bwrap."""
     denies = "".join(f'{json.dumps(path)} = "deny"\n' for path in claude_read_denies(home))
     return (
         f"{PERMISSIONS_START}\n"
         "[permissions.workspace-only]\n"
         'extends = ":workspace"\n'
+        "\n[permissions.workspace-only.network]\n"
+        "enabled = true\n"
         + (f"\n[permissions.workspace-only.filesystem]\n{denies}" if denies else "")
         + f"{PERMISSIONS_END}\n"
     )

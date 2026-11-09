@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2 - 2026-11-09
+
+- Codex: the permission profile `workspace-only` turns the network on, as for Claude Code Bash;
+  without it commands cannot reach local Unix sockets (herdr-core `hc`, Docker).
+
 ## 0.2.1 - 2026-11-04
 
 - Codex: the RTK hook command goes through the skill link `~/.agents/skills/token-stack`; moving the

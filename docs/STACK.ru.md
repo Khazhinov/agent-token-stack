@@ -46,7 +46,7 @@ Ponytail не является инструментом экономии ток�
 | Caveman | плагин `caveman@caveman` | не используется (глобальные правила и так компактны) | плагин из `src/plugins/opencode` |
 | Ponytail | плагин `ponytail@ponytail` | компактные правила в глобальном `AGENTS.md` | плагин `@dietrichgebert/ponytail` |
 | TokenEconomizer | плагин, `shadow=true` | плагин, `shadow=true` | не используется |
-| Права | `permissions.deny` и `sandbox.filesystem.denyRead` для секретов, auto mode | профиль `workspace-only`, повторяющий запреты чтения Claude, `auto_review` | по умолчанию |
+| Права | `permissions.deny` и `sandbox.filesystem.denyRead` для секретов, auto mode | профиль `workspace-only`, повторяющий запреты чтения Claude, сеть включена, `auto_review` | по умолчанию |
 
 Установленные плагины и MCP-серверы вступают в силу после перезапуска сессии.
 

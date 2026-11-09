@@ -65,6 +65,7 @@ class TokenStackTest(unittest.TestCase):
         self.assertEqual(config["approvals_reviewer"], "auto_review")
         self.assertIn("explicitly requested", config["auto_review"]["extra_policy"])
         self.assertEqual(config["permissions"]["workspace-only"]["extends"], ":workspace")
+        self.assertIs(config["permissions"]["workspace-only"]["network"]["enabled"], True)
         self.assertNotIn("filesystem", config["permissions"]["workspace-only"])
         hooks = json.loads(first_hooks)
         self.assertIn("keep-me", json.dumps(hooks))

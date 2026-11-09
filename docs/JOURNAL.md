@@ -85,3 +85,13 @@ details stay in `local/JOURNAL.md`.
   file and position of the hook and compares the hash of its command, and the command contained the
   repository path. The command now goes through the skill link, which follows the repository when it
   moves; the trusted hash stays valid.
+
+## 2026-11-09 - Codex network on for local sockets
+
+- A Codex session could not reach herdr-core: `hc` inside the sandbox got `Operation not permitted` on
+  the core's Unix socket, then tried to start a second core and failed (systemd bus, read-only file
+  system). Codex as a GSD owner or herdr worker could not start or watch agents.
+- `codex sandbox` (0.167) checks: an allow rule for the socket alone (`network.unix_sockets`) does not
+  help, with or without the network proxy; `network.enabled = true` does.
+- The profile `workspace-only` now turns the network on. This matches Claude Code, whose Bash runs
+  with the network on; read denies for secrets and workspace-only writes stay.

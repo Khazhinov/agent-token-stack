@@ -17,6 +17,7 @@ English | [Русский](TROUBLESHOOTING.ru.md)
 | Headroom with a SOCKS proxy in the environment | service exits with `ImportError: Using SOCKS proxy, but the 'socksio' package is not installed` | install and update with `uv tool install 'headroom-ai[proxy]' --with socksio --force`; `uv tool upgrade` drops the extras |
 | Headroom turned off by deleting `ANTHROPIC_BASE_URL` | the agent keeps calling the stopped proxy (`ConnectionRefused` or a silent hang) because the variable is still set in the shell | set `ANTHROPIC_BASE_URL=https://api.anthropic.com` explicitly instead of deleting it |
 | Updates or indexing from two agents at once | broken or conflicting shared CBM cache | update the shared binary and index a project from one agent at a time; never delete the cache as a fix |
+| Codex commands get `Operation not permitted` on a local Unix socket (`hc`, Docker) | `hc` then tries to start a core and fails on systemd or a read-only file system | the permission profile has the network off; reinstall the stack (`workspace-only` turns it on), restart Codex, check `codex sandbox -- hc ls` |
 | RTK rewrites `rg --files` wrongly | the command fails or searches instead of listing | old RTK (0.42.4) rewrote it to `rtk grep --files`; check `rtk hook check 'rg --files'`, `manage.py doctor` checks it too |
 | context-mode installed by hand from a tarball | the plugin folder disappears | Claude Code deletes unknown folders in the plugin cache; install and update through `claude plugin` |
 

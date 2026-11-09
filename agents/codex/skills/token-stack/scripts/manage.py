@@ -30,6 +30,9 @@ CBM_START = "# >>> codex-token-stack cbm >>>"
 CBM_END = "# <<< codex-token-stack cbm <<<"
 PERMISSIONS_START = "# >>> codex-token-stack permissions >>>"
 PERMISSIONS_END = "# <<< codex-token-stack permissions <<<"
+# Caches that orchestration tools share across projects (herdr-gsd-template,
+# herdr-agent-kit); an owner session writes quota ledgers and locks there.
+SHARED_WRITES = ["~/.cache/herdr-orch", "~/.cache/herdr-agent-kit"]
 CBM_UPDATER_START = "# >>> codebase-memory-mcp SessionStart >>>"
 CBM_UPDATER_END = "# <<< codebase-memory-mcp SessionStart <<<"
 BINARY_SPECS = {
@@ -133,7 +136,8 @@ def strip_root_keys(text: str) -> str:
     return "".join(kept)
 
 
-def ensure_hooks_feature(text: str) -> str:
+def ensure_feature(text: str, key: str, value: str) -> str:
+    entry = f"{key} = {value}\n"
     lines = text.splitlines(keepends=True)
     feature_at = None
     next_table = len(lines)
@@ -148,13 +152,13 @@ def ensure_hooks_feature(text: str) -> str:
             feature_at = index
     if feature_at is None:
         suffix = "" if not text or text.endswith("\n") else "\n"
-        return text + suffix + "\n[features]\nhooks = true\n"
+        return text + suffix + "\n[features]\n" + entry
 
     for index in range(feature_at + 1, next_table):
-        if re.match(r"^\s*hooks\s*=", lines[index]):
-            lines[index] = "hooks = true\n"
+        if re.match(rf"^\s*{key}\s*=", lines[index]):
+            lines[index] = entry
             return "".join(lines)
-    lines.insert(feature_at + 1, "hooks = true\n")
+    lines.insert(feature_at + 1, entry)
     return "".join(lines)
 
 
@@ -235,16 +239,18 @@ def permissions_block(home: Path) -> str:
     denied paths, writes stay in the workspace, auto_review judges the rest.
     Network is on, as for Claude's Bash: without it commands cannot reach local
     Unix sockets either (herdr-core `hc`, Docker) and fail with EPERM.
-    No ":root" deny: Codex runs its own binary from ~/.codex/packages inside bwrap."""
-    denies = "".join(f'{json.dumps(path)} = "deny"\n' for path in claude_read_denies(home))
+    No ":root" deny: Codex runs its own binary from ~/.codex/packages inside bwrap.
+    Shared agent caches outside the workspace stay writable (SHARED_WRITES)."""
+    rules = "".join(f'{json.dumps(path)} = "write"\n' for path in SHARED_WRITES)
+    rules += "".join(f'{json.dumps(path)} = "deny"\n' for path in claude_read_denies(home))
     return (
         f"{PERMISSIONS_START}\n"
         "[permissions.workspace-only]\n"
         'extends = ":workspace"\n'
         "\n[permissions.workspace-only.network]\n"
         "enabled = true\n"
-        + (f"\n[permissions.workspace-only.filesystem]\n{denies}" if denies else "")
-        + f"{PERMISSIONS_END}\n"
+        f"\n[permissions.workspace-only.filesystem]\n{rules}"
+        f"{PERMISSIONS_END}\n"
     )
 
 
@@ -273,7 +279,10 @@ def update_config(layout: Layout, *, native: bool | None, cbm: bool | None) -> N
     text = strip_block(text, PERMISSIONS_START, PERMISSIONS_END)
     text = strip_block(text, CBM_UPDATER_START, CBM_UPDATER_END)
     text = strip_root_keys(strip_cbm_tables(text)).lstrip("\n")
-    text = ensure_hooks_feature(text).rstrip() + "\n"
+    text = ensure_feature(text, "hooks", "true")
+    # A plain `codex` must not attach to the shared app-server daemon: the
+    # daemon runs commands outside the calling terminal and its environment.
+    text = ensure_feature(text, "daemon_auto_start", "false").rstrip() + "\n"
     text = root_block(native) + text
     text = text.rstrip() + "\n\n" + permissions_block(layout.home)
     if cbm:

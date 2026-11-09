@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3 - 2026-11-09
+
+- Codex: `features.daemon_auto_start = false`; a plain `codex` no longer runs commands in the shared
+  app-server daemon with another terminal's environment.
+- Codex: the profile `workspace-only` allows writes to the shared orchestration caches
+  `~/.cache/herdr-orch` and `~/.cache/herdr-agent-kit`.
+
 ## 0.2.2 - 2026-11-09
 
 - Codex: the permission profile `workspace-only` turns the network on, as for Claude Code Bash;

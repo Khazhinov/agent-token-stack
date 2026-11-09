@@ -95,3 +95,14 @@ details stay in `local/JOURNAL.md`.
   help, with or without the network proxy; `network.enabled = true` does.
 - The profile `workspace-only` now turns the network on. This matches Claude Code, whose Bash runs
   with the network on; read denies for secrets and workspace-only writes stay.
+
+## 2026-11-09 - Codex without the shared daemon, writable orchestration caches
+
+- A plain `codex` (0.167) attaches to the shared app-server daemon. The daemon runs shell commands with
+  the environment of the terminal that started it: a GSD owner saw another project's `HC_TERMINAL_ID`,
+  and `codex sandbox` inside it failed (nested sandbox).
+- `features.daemon_auto_start = false` keeps a plain `codex` in its own process. While an old daemon is
+  alive, Codex asks once whether to run without it; after the daemon stops, the question disappears.
+- The profile `workspace-only` allowed writes only in the workspace, so quota ledgers and locks in
+  `~/.cache/herdr-orch` and the kit cache failed with `Read-only file system`. Both caches are now
+  writable; a `write` rule for a missing path is accepted by `codex sandbox`.

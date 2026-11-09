@@ -46,7 +46,7 @@ them as measured facts.
 | Caveman | plugin `caveman@caveman` | not used (global rules are compact already) | plugin from `src/plugins/opencode` |
 | Ponytail | plugin `ponytail@ponytail` | compact rules in the global `AGENTS.md` | plugin `@dietrichgebert/ponytail` |
 | TokenEconomizer | plugin, `shadow=true` | plugin, `shadow=true` | not used |
-| Permissions | `permissions.deny` and `sandbox.filesystem.denyRead` for secrets, auto mode | profile `workspace-only` mirroring Claude's read denies, network on, `auto_review` | defaults |
+| Permissions | `permissions.deny` and `sandbox.filesystem.denyRead` for secrets, auto mode | profile `workspace-only` mirroring Claude's read denies, network on, writes to the shared orchestration caches, `auto_review`; `daemon_auto_start = false` | defaults |
 
 Installed plugins and MCP servers take effect after a session restart.
 
@@ -84,6 +84,7 @@ project_doc_max_bytes = 16384
 
 [features]
 hooks = true
+daemon_auto_start = false
 
 [mcp_servers.codebase-memory]
 command = "/absolute/path/to/codebase-memory-mcp"

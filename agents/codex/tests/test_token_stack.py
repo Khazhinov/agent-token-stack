@@ -66,7 +66,9 @@ class TokenStackTest(unittest.TestCase):
         self.assertIn("explicitly requested", config["auto_review"]["extra_policy"])
         self.assertEqual(config["permissions"]["workspace-only"]["extends"], ":workspace")
         self.assertIs(config["permissions"]["workspace-only"]["network"]["enabled"], True)
-        self.assertNotIn("filesystem", config["permissions"]["workspace-only"])
+        self.assertEqual(config["permissions"]["workspace-only"]["filesystem"],
+                         {"~/.cache/herdr-orch": "write", "~/.cache/herdr-agent-kit": "write"})
+        self.assertIs(config["features"]["daemon_auto_start"], False)
         hooks = json.loads(first_hooks)
         self.assertIn("keep-me", json.dumps(hooks))
         rtk = hooks["hooks"]["PreToolUse"][0]["hooks"][0]["command"]
@@ -92,7 +94,8 @@ class TokenStackTest(unittest.TestCase):
         self.run_manage("install")
         config = tomllib.loads((self.home / ".codex/config.toml").read_text())
         fs = config["permissions"]["workspace-only"]["filesystem"]
-        self.assertEqual(fs, {"~/.secrets": "deny", "/srv/app/.env": "deny", "~/.claude/creds": "deny",
+        self.assertEqual(fs, {"~/.cache/herdr-orch": "write", "~/.cache/herdr-agent-kit": "write",
+                              "~/.secrets": "deny", "/srv/app/.env": "deny", "~/.claude/creds": "deny",
                               "/opt/key": "deny", "~/.claude/local.env": "deny"})
 
     def test_local_rules_are_appended_to_global_agents_md(self):

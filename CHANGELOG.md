@@ -34,3 +34,7 @@
   to the global `AGENTS.md`.
 - Claude Code switcher (`toggle.py`) and both installers without machine-specific paths.
 - `scripts/self-check.sh`: installer tests, privacy and typography checks.
+
+## Unreleased
+
+- Carry upstream-maintenance authorization in shared instructions for all three runtimes and require propagation into consuming project instructions.

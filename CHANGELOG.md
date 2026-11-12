@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Claude Code: `hooks/cbm-session-reminder.sh`, the second script `/stack on cbm` registers; it was
+  produced only by the forbidden CBM installer.
+- Claude Code: `toggle.py on` skips a hook whose script under `~/.claude/hooks` is missing (CBM
+  hooks, the optional context-mode self-heal hook) instead of registering a hook that fails on every event.
+
 ## 0.2.3 - 2026-11-09
 
 - Codex: `features.daemon_auto_start = false`; a plain `codex` no longer runs commands in the shared

@@ -11,6 +11,7 @@
 | `settings.example.json` | пример частей `~/.claude/settings.json`, на которые опирается стек: запреты чтения секретов, плагины, явный адрес API |
 | `mcp.example.json` | `.mcp.json` для корня проекта с кодом (CBM на уровне проекта) |
 | `hooks/cbm-gate-early-exit.sh` | шлюз CBM для Grep/Glob с ранним выходом в проектах без графа |
+| `hooks/cbm-session-reminder.sh` | напоминание о CBM при старте сессии, только в проектах, где `.mcp.json` подключает CBM |
 
 ## Установка
 
@@ -26,7 +27,9 @@ ln -s "$(pwd)/agents/claude-code/skills/stack" ~/.claude/skills/stack
    `microsoft/TokenEconomizer` + `tokeneconomizer@tokeneconomizer`.
 2. Hook RTK: `rtk init -g` или `/stack on rtk` после установки бинарника.
 3. CBM: общий бинарник (закреплённая установка - в части Codex), `.mcp.json` проекта по образцу
-   `mcp.example.json`, hook-шлюз из `hooks/`.
+   `mcp.example.json`, оба hook из `hooks/`: `cbm-gate-early-exit.sh` как
+   `~/.claude/hooks/cbm-code-discovery-gate`, `cbm-session-reminder.sh` как `~/.claude/hooks/cbm-session-reminder`.
+   `/stack on cbm` пропускает hook, скрипт которого не установлен.
 4. Добавить `RULES.md` в `~/.claude/CLAUDE.md` (копией или `@<путь к RULES.md>`).
 5. `/stack normalize`, затем `/stack`. Перезапустить сессию, где помечено.
 

@@ -57,6 +57,22 @@ class ToggleTest(unittest.TestCase):
             self.assertTrue(toggle.apply_cbm_update())
             run.assert_not_called()
 
+    def hooks(self):
+        return json.loads((self.home / ".claude/settings.json").read_text()).get("hooks", {})
+
+    def test_on_skips_hooks_without_scripts(self):
+        self.run_toggle("on", "cbm")
+        self.run_toggle("on", "context-mode")
+        self.assertEqual(self.hooks().get("PreToolUse", []), [])
+        self.assertEqual(self.hooks().get("SessionStart", []), [])
+        hooks = self.home / ".claude/hooks"
+        hooks.mkdir()
+        for name in ("cbm-code-discovery-gate", "cbm-session-reminder"):
+            (hooks / name).write_text("#!/bin/sh\n")
+        self.run_toggle("on", "cbm")
+        self.assertEqual(len(self.hooks()["PreToolUse"]), 1)
+        self.assertEqual(len(self.hooks()["SessionStart"]), 4)
+
 
 if __name__ == "__main__":
     unittest.main()

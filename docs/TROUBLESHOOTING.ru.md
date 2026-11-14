@@ -32,3 +32,12 @@ codebase-memory-mcp --version
 codex sandbox -- /bin/true
 curl -s http://127.0.0.1:8787/livez      # Headroom, только если включён: {"alive":true}
 ```
+
+## Конфигурация Codex и расходы теневого режима
+
+`codex --strict-config app-server --print-startup-config` выявляет неподдерживаемые поля, включая
+старое `auto_review.extra_policy`. Переустановить управляемую конфигурацию.
+
+`shadow=true` в TokenEconomizer не гарантирует отсутствия модельных вызовов. Проверять записи
+`kind=overhead` в журнале конкретного агента и сравнивать с вмешательствами. Взвешенные
+`effective_tokens` с fallback являются оценкой, а не сырыми токенами или счётчиком подписки.

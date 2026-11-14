@@ -23,6 +23,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parents[3]
 # Machine-specific rules (git-ignored) appended to the public AGENTS.md when present.
 LOCAL_GUIDANCE = Path(os.environ.get("TOKEN_STACK_LOCAL", REPO.parents[1] / "local")) / "codex/AGENTS.md"
+LOCAL_SETTINGS = LOCAL_GUIDANCE.with_name("settings.json")
 COMPONENTS = ("rtk", "cbm", "native", "te")
 ROOT_START = "# >>> codex-token-stack root >>>"
 ROOT_END = "# <<< codex-token-stack root <<<"
@@ -37,9 +38,9 @@ CBM_UPDATER_START = "# >>> codebase-memory-mcp SessionStart >>>"
 CBM_UPDATER_END = "# <<< codebase-memory-mcp SessionStart <<<"
 BINARY_SPECS = {
     "rtk": {
-        "version": (0, 49, 0),
-        "url": "https://github.com/rtk-ai/rtk/releases/download/v0.49.0/rtk-x86_64-unknown-linux-musl.tar.gz",
-        "sha256": "a051b22361c7cfa36022bc3f06bb41cdc88e58a07263dc340d8bd3468c41befe",
+        "version": (1, 2, 0),
+        "url": "https://github.com/rtk-ai/rtk/releases/download/v1.2.0/rtk-x86_64-unknown-linux-musl.tar.gz",
+        "sha256": "8a64af588cabed12eca467d407e3d63c05b3a9b7afc308c2dda75489f7270dfb",
     },
     "codebase-memory-mcp": {
         "version": (0, 12, 1),
@@ -129,7 +130,7 @@ def strip_root_keys(text: str) -> str:
         if re.match(r"^\s*\[", line):
             in_root = False
         if in_root and re.match(
-            r"^\s*(tool_output_token_limit|project_doc_max_bytes|sandbox_mode|default_permissions|approval_policy|approvals_reviewer|auto_review\.extra_policy)\s*=", line
+            r"^\s*(tool_output_token_limit|project_doc_max_bytes|model_auto_compact_token_limit|sandbox_mode|default_permissions|approval_policy|approvals_reviewer)\s*=", line
         ):
             continue
         kept.append(line)
@@ -169,14 +170,14 @@ def cbm_binary() -> str:
 
 
 def root_block(native: bool) -> str:
-    native_lines = "tool_output_token_limit = 10000\nproject_doc_max_bytes = 16384\n" if native else ""
+    native_lines = (
+        "tool_output_token_limit = 10000\nproject_doc_max_bytes = 16384\n"
+        "model_auto_compact_token_limit = 160000\n"
+    ) if native else ""
     return f"{ROOT_START}\n{native_lines}" + (
         'default_permissions = "workspace-only"\n'
         'approval_policy = "on-request"\n'
         'approvals_reviewer = "auto_review"\n'
-        "auto_review.extra_policy = '''\n"
-        "For filesystem actions outside the current workspace, approve only when the user explicitly requested work in that directory or path. Do not infer authorization from convenience or proximity to the workspace. Keep any approval limited to the requested path and action. Deny ambiguous or unrelated access and ask the user to specify the target. Apply the default reviewer safety policy as well.\n"
-        "'''\n"
         f"{ROOT_END}\n\n"
     )
 
@@ -234,7 +235,7 @@ def claude_read_denies(home: Path) -> list[str]:
     return list(dict.fromkeys(p for p in paths if "*" not in p))
 
 
-def permissions_block(home: Path) -> str:
+def permissions_block(home: Path, retained_denies: tuple[str, ...] = ()) -> str:
     """Same as Claude Code: the whole file system is readable except Claude's
     denied paths, writes stay in the workspace, auto_review judges the rest.
     Network is on, as for Claude's Bash: without it commands cannot reach local
@@ -242,7 +243,9 @@ def permissions_block(home: Path) -> str:
     No ":root" deny: Codex runs its own binary from ~/.codex/packages inside bwrap.
     Shared agent caches outside the workspace stay writable (SHARED_WRITES)."""
     rules = "".join(f'{json.dumps(path)} = "write"\n' for path in SHARED_WRITES)
-    rules += "".join(f'{json.dumps(path)} = "deny"\n' for path in claude_read_denies(home))
+    local = json.loads(read_text(LOCAL_SETTINGS) or "{}")
+    denies = list(dict.fromkeys([*claude_read_denies(home), *retained_denies, *local.get("read_denies", [])]))
+    rules += "".join(f'{json.dumps(path)} = "deny"\n' for path in denies)
     return (
         f"{PERMISSIONS_START}\n"
         "[permissions.workspace-only]\n"
@@ -265,6 +268,7 @@ def update_config(layout: Layout, *, native: bool | None, cbm: bool | None) -> N
     current_native = (
         parsed.get("tool_output_token_limit") == 10000
         and parsed.get("project_doc_max_bytes") == 16384
+        and parsed.get("model_auto_compact_token_limit") == 160000
     )
     servers = parsed.get("mcp_servers", {})
     current_cbm = bool(servers.get("codebase-memory", {}).get("enabled", True))
@@ -284,7 +288,9 @@ def update_config(layout: Layout, *, native: bool | None, cbm: bool | None) -> N
     # daemon runs commands outside the calling terminal and its environment.
     text = ensure_feature(text, "daemon_auto_start", "false").rstrip() + "\n"
     text = root_block(native) + text
-    text = text.rstrip() + "\n\n" + permissions_block(layout.home)
+    filesystem = parsed.get("permissions", {}).get("workspace-only", {}).get("filesystem", {})
+    retained_denies = tuple(path for path, access in filesystem.items() if access == "deny")
+    text = text.rstrip() + "\n\n" + permissions_block(layout.home, retained_denies)
     if cbm:
         text = text.rstrip() + "\n\n" + cbm_block()
     tomllib.loads(text)
@@ -402,8 +408,45 @@ def install(layout: Layout) -> None:
     bootstrap(layout)
     install_guidance(layout)
     ensure_symlink(layout.skill, REPO / "skills/token-stack")
+    # Backups inside skills/ are discovered as duplicate active skills.
+    for old in layout.skill.parent.glob("token-stack.pre-*"):
+        destination = layout.agents / "skill-backups" / old.name
+        if destination.exists() or destination.is_symlink():
+            raise SystemExit(f"Cannot overwrite skill backup: {destination}")
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        old.rename(destination)
     update_config(layout, native=True, cbm=True)
     update_hooks(layout, True)
+    install_local_settings(layout)
+
+
+def install_local_settings(layout: Layout) -> None:
+    """Apply explicitly chosen machine defaults without changing other agents."""
+    if not LOCAL_SETTINGS.exists():
+        return
+    settings = json.loads(read_text(LOCAL_SETTINGS))
+    effort = settings.get("reasoning_effort")
+    if effort is not None:
+        if effort not in {"low", "medium", "high", "xhigh", "max", "ultra"}:
+            raise SystemExit("Invalid reasoning_effort in local/codex/settings.json")
+        text = read_text(layout.config)
+        # Only root keys: project and custom agent overrides must survive.
+        table = re.search(r"(?m)^\s*\[", text)
+        end = table.start() if table else len(text)
+        root, tables = text[:end], text[end:]
+        root = re.sub(r"(?m)^model_reasoning_effort\s*=.*\n?", "", root)
+        text = f'model_reasoning_effort = "{effort}"\n' + root + tables
+        tomllib.loads(text)
+        write_text(layout.config, text)
+    if settings.get("trust_all_directories") is True:
+        binary = layout.codex / "packages/standalone/current/bin/codex"
+        if not binary.is_file():
+            raise SystemExit("The opt-in auto-trust launcher requires a standalone Codex installation")
+        target = layout.home / ".local/bin/codex"
+        saved = target.with_name("codex.pre-token-stack")
+        if target.is_symlink() and not (saved.exists() or saved.is_symlink()):
+            saved.symlink_to(os.readlink(target))
+        ensure_symlink(target, REPO / "scripts/codex-launch.py")
 
 
 def command_version(command: str) -> str:
@@ -428,14 +471,14 @@ def toggle_te(layout: Layout, enabled: bool, *, explicit: bool) -> None:
         if explicit:
             raise SystemExit("TokenEconomizer is not installed in Codex")
         return
-    header = re.search(r'(?m)^\[plugins\."tokeneconomizer@tokeneconomizer"\]\s*$', current)
+    header = re.search(r'(?m)^\[plugins\."tokeneconomizer@tokeneconomizer"\][ \t]*$', current)
     if not header:
         raise SystemExit("Unknown TokenEconomizer configuration format")
     next_table = re.search(r"(?m)^\[", current[header.end():])
     end = header.end() + next_table.start() if next_table else len(current)
     section = current[header.end():end]
     value = "true" if enabled else "false"
-    field = re.search(r"(?m)^enabled\s*=\s*(?:true|false)\s*$", section)
+    field = re.search(r"(?m)^enabled[ \t]*=[ \t]*(?:true|false)\b", section)
     if field:
         section = section[:field.start()] + f"enabled = {value}" + section[field.end():]
     else:
@@ -464,6 +507,7 @@ def states(layout: Layout) -> dict[str, tuple[bool, str]]:
     native_on = (
         config.get("tool_output_token_limit") == 10000
         and config.get("project_doc_max_bytes") == 16384
+        and config.get("model_auto_compact_token_limit") == 160000
     )
     text = guidance_text()
     guidance_on = (
@@ -477,7 +521,7 @@ def states(layout: Layout) -> dict[str, tuple[bool, str]]:
     return {
         "RTK": (rtk_on, rtk_version),
         "Codebase Memory": (cbm_on, cbm_version),
-        "Native limits": (native_on, "10000 tokens / 16384 bytes"),
+        "Native limits": (native_on, f"10000 tokens / 16384 bytes / compact {config.get('model_auto_compact_token_limit', 'model default')}"),
         "TokenEconomizer": (te_on, "experimental Codex plugin" if te_installed else "not installed"),
         "Global guidance": (guidance_on, str(REPO / "AGENTS.md")),
         "Token Stack skill": (skill_on, str(REPO / "skills/token-stack")),
@@ -534,6 +578,13 @@ def doctor(layout: Layout) -> int:
 
     codex = shutil.which("codex")
     if codex:
+        strict = subprocess.run(
+            [codex, "--strict-config", "app-server", "--print-startup-config"],
+            text=True, capture_output=True, timeout=30, check=False,
+            env={**os.environ, "CODEX_HOME": str(layout.codex)},
+        )
+        if strict.returncode:
+            failures.append("Codex rejected configuration: " + (strict.stdout or strict.stderr).strip())
         sandbox = subprocess.run(
             [codex, "sandbox", "--", "/bin/true"],
             text=True, capture_output=True, timeout=30, check=False,

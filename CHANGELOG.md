@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.0 - 2026-11-14
+
+- Codex: compact history at 160000 tokens instead of waiting for the model's context limit.
+- Codex: optional local reasoning effort, additional read denies and a standalone auto-trust
+  launcher. The launcher keeps Auto-review, the sandbox and separate hook trust, supports `-C` /
+  `--cd`, and always selects `--no-daemon`.
+- Codex: remove unsupported `auto_review.extra_policy`; doctor validates strict CLI startup.
+- Codex: fix plugin toggles consuming newlines before the next TOML table; preserve comments.
+- Codex: retain existing read denies and move skill backups outside active skill discovery.
+- RTK: pin 1.2.0 with verified binary SHA-256; keep the trusted hook command stable.
+- Document TokenEconomizer's model-judge overhead in shadow mode and distinguish raw usage,
+  cached input and fallback-weighted estimates. Installation preserves the plugin's enabled state.
+
 ## 0.2.3 - 2026-11-09
 
 - Codex: `features.daemon_auto_start = false`; a plain `codex` no longer runs commands in the shared

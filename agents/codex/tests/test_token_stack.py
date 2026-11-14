@@ -63,7 +63,9 @@ class TokenStackTest(unittest.TestCase):
         self.assertEqual(config["default_permissions"], "workspace-only")
         self.assertEqual(config["approval_policy"], "on-request")
         self.assertEqual(config["approvals_reviewer"], "auto_review")
-        self.assertIn("explicitly requested", config["auto_review"]["extra_policy"])
+
+        self.assertNotIn("extra_policy", config.get("auto_review", {}))
+        self.assertEqual(config["model_auto_compact_token_limit"], 160000)
         self.assertEqual(config["permissions"]["workspace-only"]["extends"], ":workspace")
         self.assertIs(config["permissions"]["workspace-only"]["network"]["enabled"], True)
         self.assertEqual(config["permissions"]["workspace-only"]["filesystem"],
@@ -111,6 +113,16 @@ class TokenStackTest(unittest.TestCase):
         self.assertTrue(text.startswith((REPO / "AGENTS.md").read_text(encoding="utf-8").rstrip()))
         self.assertTrue(text.endswith("local rule\n"))
 
+    def test_install_retains_codex_only_read_denies(self):
+        self.run_manage("install")
+        path = self.home / ".codex/config.toml"
+        path.write_text(path.read_text().replace('[permissions.workspace-only.filesystem]\n',
+                        '[permissions.workspace-only.filesystem]\n"~/.private/legacy.env" = "deny"\n'))
+        self.run_manage("install")
+        self.run_manage("install")
+        config = tomllib.loads(path.read_text())
+        self.assertEqual(config["permissions"]["workspace-only"]["filesystem"]["~/.private/legacy.env"], "deny")
+
     def test_components_toggle_independently(self):
         self.run_manage("install")
         for component in ("rtk", "cbm", "native"):
@@ -130,6 +142,7 @@ class TokenStackTest(unittest.TestCase):
         config = tomllib.loads((self.home / ".codex/config.toml").read_text())
         self.assertEqual(config["default_permissions"], "workspace-only")
         self.assertEqual(config["approvals_reviewer"], "auto_review")
+        self.assertNotIn("model_auto_compact_token_limit", config)
 
     def test_doctor_checks_real_hook(self):
         self.run_manage("install")
@@ -137,14 +150,73 @@ class TokenStackTest(unittest.TestCase):
         self.assertIn("DOCTOR: OK", result.stdout)
         self.assertIn("rtk rg --files", result.stdout)
 
+    def test_skill_backup_is_preserved_outside_discovery(self):
+        old = self.home / ".agents/skills/token-stack.pre-agent-token-stack"
+        old.mkdir(parents=True)
+        (old / "SKILL.md").write_text("old skill\n")
+        self.run_manage("install")
+        self.run_manage("install")
+        self.assertFalse(old.exists())
+        saved = self.home / ".agents/skill-backups" / old.name / "SKILL.md"
+        self.assertEqual(saved.read_text(), "old skill\n")
+
     def test_te_toggle_only_changes_codex_plugin(self):
         self.run_manage("install")
         path = self.home / ".codex/config.toml"
-        path.write_text(path.read_text() + '\n[plugins."tokeneconomizer@tokeneconomizer"]\nenabled = true\n')
+        path.write_text(path.read_text() + '\n[plugins."tokeneconomizer@tokeneconomizer"]\n'
+                        'enabled = true # preserve comment\n[notice]\nhide_rate_limit_model_nudge = true\n')
         self.run_manage("off", "te")
         self.assertFalse(tomllib.loads(path.read_text())["plugins"]["tokeneconomizer@tokeneconomizer"]["enabled"])
+        self.assertTrue(tomllib.loads(path.read_text())["notice"]["hide_rate_limit_model_nudge"])
+        self.assertIn("# preserve comment", path.read_text())
         self.run_manage("on", "te")
         self.assertTrue(tomllib.loads(path.read_text())["plugins"]["tokeneconomizer@tokeneconomizer"]["enabled"])
+
+    def test_local_effort_and_launcher_preserve_user_overrides(self):
+        local = self.home / "local"
+        (local / "codex").mkdir(parents=True)
+        (local / "codex/settings.json").write_text(json.dumps({
+            "reasoning_effort": "medium", "trust_all_directories": True,
+        }))
+        binary = self.home / ".codex/packages/standalone/current/bin/codex"
+        binary.parent.mkdir(parents=True)
+        binary.write_text("#!/bin/sh\nexit 0\n")
+        binary.chmod(0o755)
+        launcher = self.home / ".local/bin/codex"
+        launcher.parent.mkdir(parents=True)
+        launcher.symlink_to(binary)
+        path = self.home / ".codex/config.toml"
+        path.write_text('model_reasoning_effort = "high"\n' + path.read_text()
+                        + '\n[profiles.deep]\nmodel_reasoning_effort = "high"\n')
+        env = {**os.environ, "TOKEN_STACK_LOCAL": str(local)}
+        for _ in range(2):
+            subprocess.run([sys.executable, str(MANAGE), "--home", str(self.home), "install"],
+                           text=True, capture_output=True, check=True, env=env)
+        config = tomllib.loads(path.read_text())
+        self.assertEqual(config["model_reasoning_effort"], "medium")
+        self.assertEqual(config["profiles"]["deep"]["model_reasoning_effort"], "high")
+        self.assertEqual(config["model"], "keep-me")
+        self.assertEqual(launcher.resolve(), (REPO / "scripts/codex-launch.py").resolve())
+        self.assertEqual(launcher.with_name("codex.pre-token-stack").resolve(), binary)
+
+    def test_launcher_quotes_directory_and_preserves_arguments(self):
+        binary = self.home / ".codex/packages/standalone/current/bin/codex"
+        binary.parent.mkdir(parents=True)
+        binary.write_text('#!/usr/bin/env python3\nimport json,sys\nprint(json.dumps(sys.argv[1:]))\n')
+        binary.chmod(0o755)
+        cwd = self.home / 'space " quote $(unused) 🚀'
+        cwd.mkdir()
+        result = subprocess.run(
+            [sys.executable, str(REPO / "scripts/codex-launch.py"), "-C", str(cwd),
+             "--config", 'model_reasoning_effort="high"', "prompt"],
+            capture_output=True, text=True, check=True, env={**os.environ, "HOME": str(self.home)},
+        )
+        args = json.loads(result.stdout)
+        self.assertEqual(args[0], "--no-daemon")
+        trust = tomllib.loads(args[2])["projects"]
+        self.assertEqual(trust[str(cwd)]["trust_level"], "trusted")
+        self.assertIn(f'projects.{json.dumps(str(cwd), ensure_ascii=False)}.trust_level="trusted"', args)
+        self.assertEqual(args[-5:], ["-C", str(cwd), "--config", 'model_reasoning_effort="high"', "prompt"])
 
     def test_install_preserves_tables_inserted_inside_cbm_markers(self):
         self.run_manage("install")

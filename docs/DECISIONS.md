@@ -17,3 +17,5 @@ English | [Русский](DECISIONS.ru.md)
 | S11 | Hook latency budget about 100 ms per hook; measured after each plugin update | hooks run on every tool call; a vendor doctor may report OK while a hook takes seconds | trust the vendor diagnostics |
 | S12 | Public part in git, machine specifics in the git-ignored `local/`; local agent rules are appended to the generated global rules | the same repository serves the author and anyone it is handed to, without leaking paths, hosts or secret locations | a private fork per machine |
 | S13 | Each agent owns its configuration folder; others only read it | independent switches; one agent's change cannot break another | one script managing every agent |
+| S14 | Compact Codex at 160000 tokens; select effort and auto-trust only through explicit local preferences | long history and high reasoning still consume quota; exact cwd trust needs a launcher | count cached input as free; bypass sandbox or action review |
+| S15 | Count TokenEconomizer model judges even in shadow mode | shadow suppresses interventions, not all model calls | assume observation is free |

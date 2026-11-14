@@ -80,6 +80,7 @@ Ponytail не является инструментом экономии ток�
 ```toml
 tool_output_token_limit = 10000
 project_doc_max_bytes = 16384
+model_auto_compact_token_limit = 160000
 
 [features]
 hooks = true
@@ -191,3 +192,8 @@ Claude Code: `/stack mode doc|dev`. OpenCode: `/caveman off`, `/ponytail off` н
 | Node.js | 22.22.0 |
 
 Фактическая версия общего инструмента - то, что сообщает его бинарник, а не запись в документе.
+
+Дополнительная проверка Codex 2026-11-14: CLI 0.169.0, RTK 1.2.0 и CBM 0.12.1.
+Pin Codex теперь RTK 1.2.0; таблица выше сохраняет прежний срез.
+TokenEconomizer необязателен: shadow может вызывать модель-судью, установка сохраняет
+состояние плагина Codex. Перед включением проверить overhead конкретного агента.

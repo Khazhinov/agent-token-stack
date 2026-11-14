@@ -34,6 +34,29 @@ The installer is idempotent. It:
 
 Existing global files are saved once with the suffix `.pre-token-stack`.
 
+Optional machine preferences in `local/codex/settings.json` are applied on installation:
+`{"reasoning_effort":"medium","trust_all_directories":true}`. The second option installs a
+standalone Codex launcher for all folders, preserving Auto-review and separate hook trust.
+The native stack now compacts at 160000 tokens; model and effort stay unchanged unless explicitly
+selected in that local file. `doctor` validates configuration against the installed CLI as well.
+TokenEconomizer's shadow mode can still spend tokens on judge calls; switch it only after measuring.
+
+Create `local/codex/settings.json` with `{}` to keep existing effort and launcher choices, or select:
+
+| Key | Effect |
+|---|---|
+| `reasoning_effort` | Changes the global effort; project and explicit CLI overrides remain available. |
+| `trust_all_directories: true` | Installs the launcher for a standalone Codex installation. |
+| `read_denies` | Adds a list of private file or directory paths to the read denies. |
+
+Auto-trust loads project-local configuration without asking for folder trust. It does not approve
+new or changed hooks. The previous command is backed up as `~/.local/bin/codex.pre-token-stack`;
+a future standalone update can restore its own link, so rerun this installer if needed.
+Machine-specific plugin activation is not changed by installation. For a measured Codex-only
+TokenEconomizer disable, use `manage.py off te`; the shared config and Claude plugin are unchanged.
+Existing Codex read denies survive synchronization even when Claude no longer lists them.
+Restart Codex to load the complete setup; a resumed conversation can retain its earlier effort.
+
 ## Switches
 
 ```bash

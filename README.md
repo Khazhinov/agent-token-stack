@@ -28,6 +28,16 @@ then come back from time to time, see what changed and update the local setup.
 
 Details, compatibility and the per-agent wiring: [docs/STACK.md](docs/STACK.md).
 
+## Codex updates in 0.3.0
+
+History now compacts at 160000 tokens. Optional machine preferences select reasoning effort,
+extra read denies and an auto-trust launcher for standalone Codex. Action review and hook trust
+remain separate. Installation preserves existing read denies and the TokenEconomizer enabled state.
+
+TokenEconomizer shadow mode can still call a model judge. Cached history and reasoning output
+also consume resources; shorter command output alone does not establish subscription savings.
+See the [Codex setup](agents/codex/README.md) and [changelog](CHANGELOG.md).
+
 ## Layout
 
 | Path | Content |

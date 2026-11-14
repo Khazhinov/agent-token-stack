@@ -32,3 +32,12 @@ codebase-memory-mcp --version
 codex sandbox -- /bin/true
 curl -s http://127.0.0.1:8787/livez      # Headroom, only if it is on: {"alive":true}
 ```
+
+## Codex configuration and shadow overhead
+
+`codex --strict-config app-server --print-startup-config` catches unsupported fields, including
+the old `auto_review.extra_policy`. Reinstall the managed configuration.
+
+TokenEconomizer `shadow=true` does not guarantee zero model calls. Inspect `kind=overhead` records
+in its host-specific ledger and compare interventions. Fallback-weighted `effective_tokens` are
+estimates, not raw tokens or the subscription meter.

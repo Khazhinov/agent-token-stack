@@ -106,3 +106,15 @@ details stay in `local/JOURNAL.md`.
 - The profile `workspace-only` allowed writes only in the workspace, so quota ledgers and locks in
   `~/.cache/herdr-orch` and the kit cache failed with `Read-only file system`. Both caches are now
   writable; a `write` rule for a missing path is accepted by `codex sandbox`.
+
+## 2026-11-14 - Codex launch and usage audit
+
+Remove unsupported `auto_review.extra_policy`; doctor now validates strict CLI startup. Keep
+`on-request` with `auto_review`. Compact at 160000 tokens. Explicit local preferences can select
+effort and a standalone auto-trust launcher: trust matches exact cwd, not an ancestor or wildcard.
+The launcher retains sandbox, action review and hook trust. Pin RTK 1.2.0 after checking its archive
+digest and binary hash; the existing adapter remains compatible. TokenEconomizer shadow mode
+can still call a model judge; measure ledger overhead and interventions before enabling it.
+
+The audit also fixed plugin toggles consuming table-separating newlines and read-deny synchronization
+dropping older Codex-only denies. Skill backups are moved outside discovery without deleting them.

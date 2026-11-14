@@ -81,6 +81,7 @@ Codex covers the role of context-mode with native mechanisms. Managed by
 ```toml
 tool_output_token_limit = 10000
 project_doc_max_bytes = 16384
+model_auto_compact_token_limit = 160000
 
 [features]
 hooks = true
@@ -192,3 +193,8 @@ Snapshot of 2026-11-03, Linux (WSL2).
 | Node.js | 22.22.0 |
 
 The real version of a shared tool is what its binary reports, not what a document says.
+
+Codex was additionally checked on 2026-11-14 with CLI 0.169.0, RTK 1.2.0 and CBM 0.12.1.
+The Codex pin is now RTK 1.2.0; the table above records the earlier snapshot.
+TokenEconomizer is optional: shadow can invoke a model judge, and installation preserves
+the Codex plugin state. Inspect host-specific overhead before enabling it.

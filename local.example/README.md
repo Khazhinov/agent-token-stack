@@ -16,6 +16,8 @@ Copy `local.example/` to `local/` and fill it in. Git ignores `local/`.
 ## Agent-specific notes
 
 - `local/codex/AGENTS.md`: appended to the global Codex rules by `manage.py install`.
+- `local/codex/settings.json`: optional preferences, described in [Codex setup](../agents/codex/README.md).
+  Start with `{}` to keep effort and launcher unchanged; enable auto-trust only by explicit choice.
 - `local/claude-code/RULES.md`: import from `~/.claude/CLAUDE.md` with `@<path>`.
 - `local/private-patterns.txt`: one regular expression per line; `scripts/self-check.sh` refuses
   public files that match (host names, user names, project names).

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Document the upstream contribution checklist and require user authorization before publication.
 - Claude Code: `hooks/cbm-session-reminder.sh`, the second script `/stack on cbm` registers; it was
   produced only by the forbidden CBM installer.
 - Claude Code: `toggle.py on` defers CBM and context-mode hook entries whose scripts are unavailable

@@ -23,3 +23,14 @@ After understanding the task and the whole execution path, stop at the first run
 Do not add abstractions with one implementation, scaffolding "for later", extra dependencies or boilerplate. Prefer deletion to addition, simple code to clever code and the fewest files. Fix the root cause at the shared point of the flow, not the symptom at one caller.
 
 Minimalism does not cancel understanding the task, input validation at trust boundaries, protection from data loss, security, accessibility and explicitly requested requirements. Non-trivial logic gets one minimal runnable check; trivial changes need no test infrastructure.
+
+## Upstream contributions
+
+When a fix belongs in a shared tool, check for an existing issue or contribution. Prepare the fix
+in a clean branch or worktree and preserve unrelated changes. Record the problem, reproduction
+steps, expected and actual behavior, proposed change, compatibility impact, and validation.
+Describe any incomplete work or access blockers.
+
+Get explicit user authorization before publishing a contribution, including pushing a branch or
+opening or updating an upstream issue or pull request. Follow the upstream repository's
+contribution rules and keep secrets and machine-specific data out of public material.

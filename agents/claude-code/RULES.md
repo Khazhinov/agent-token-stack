@@ -30,3 +30,14 @@
   code, does not shrink the plan and records redundancy in SUMMARY as a deviation. Tests required by
   the plan, `tdd_mode` or `nyquist_validation` are explicitly requested. Code review of a phase adds
   `/ponytail-review` of its diff.
+
+## Upstream contributions
+
+When a fix belongs in a shared tool, check for an existing issue or contribution. Prepare the fix
+in a clean branch or worktree and preserve unrelated changes. Record the problem, reproduction
+steps, expected and actual behavior, proposed change, compatibility impact, and validation.
+Describe any incomplete work or access blockers.
+
+Get explicit user authorization before publishing a contribution, including pushing a branch or
+opening or updating an upstream issue or pull request. Follow the upstream repository's
+contribution rules and keep secrets and machine-specific data out of public material.

@@ -69,3 +69,14 @@ docs: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md), [docs/DECISIONS.md](do
 a dated entry in [docs/JOURNAL.md](docs/JOURNAL.md) and a line in [CHANGELOG.md](CHANGELOG.md),
 written without names of people, projects, hosts or paths of this machine. Keep the English file and
 its `*.ru.md` copy in sync. Run `./scripts/self-check.sh` before a commit.
+
+## Upstream contributions
+
+When a fix belongs in a shared tool, check for an existing issue or contribution. Prepare the fix
+in a clean branch or worktree and preserve unrelated changes. Record the problem, reproduction
+steps, expected and actual behavior, proposed change, compatibility impact, and validation.
+Describe any incomplete work or access blockers.
+
+Get explicit user authorization before publishing a contribution, including pushing a branch or
+opening or updating an upstream issue or pull request. Follow the upstream repository's
+contribution rules and keep secrets and machine-specific data out of public material.

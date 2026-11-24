@@ -6,6 +6,7 @@ import tempfile
 import tomllib
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -146,7 +147,20 @@ class TokenStackTest(unittest.TestCase):
 
     def test_doctor_checks_real_hook(self):
         self.run_manage("install")
-        result = self.run_manage("doctor")
+        # The real hook runs below. Codex probes need a test double because the
+        # host may have no Codex executable or disallow nested sandbox startup.
+        codex = self.home / "codex"
+        codex.write_text(
+            '#!/bin/sh\n'
+            'test -f "$CODEX_HOME/config.toml" || exit 1\n'
+            'case "$*" in\n'
+            '  "--strict-config app-server --print-startup-config"|"sandbox -- /bin/true") exit 0 ;;\n'
+            '  *) exit 1 ;;\n'
+            'esac\n'
+        )
+        codex.chmod(0o755)
+        with patch.dict(os.environ, PATH=f"{self.home}{os.pathsep}{os.environ['PATH']}"):
+            result = self.run_manage("doctor")
         self.assertIn("DOCTOR: OK", result.stdout)
         self.assertIn("rtk rg --files", result.stdout)
 

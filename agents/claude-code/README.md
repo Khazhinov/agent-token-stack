@@ -11,6 +11,7 @@ English | [Русский](README.ru.md)
 | `settings.example.json` | example of `~/.claude/settings.json` parts the stack relies on: secret read denies, plugins, explicit API URL |
 | `mcp.example.json` | `.mcp.json` for the root of a project with code (CBM per project) |
 | `hooks/cbm-gate-early-exit.sh` | CBM Grep/Glob gate with an early exit for projects without a graph |
+| `hooks/cbm-session-reminder.sh` | CBM session reminder, printed only in projects whose `.mcp.json` attaches CBM |
 
 ## Installation
 
@@ -26,7 +27,9 @@ Then:
    `microsoft/TokenEconomizer` + `tokeneconomizer@tokeneconomizer`.
 2. RTK hook: `rtk init -g`, or `/stack on rtk` after the binary is installed.
 3. CBM: shared binary (see the Codex part for the pinned install), `.mcp.json` per project from
-   `mcp.example.json`, the gate hook from `hooks/`.
+   `mcp.example.json`, both hooks from `hooks/`: `cbm-gate-early-exit.sh` as
+   `~/.claude/hooks/cbm-code-discovery-gate`, `cbm-session-reminder.sh` as `~/.claude/hooks/cbm-session-reminder`.
+   `/stack on cbm` skips a hook whose script is not installed.
 4. Add `RULES.md` to `~/.claude/CLAUDE.md` (copy, or `@<path to RULES.md>`).
 5. `/stack normalize`, then `/stack`. Restart the session where marked.
 

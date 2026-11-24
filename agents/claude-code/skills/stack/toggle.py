@@ -193,6 +193,31 @@ def _has_keyword(entry, kw):
     return False
 
 
+def _missing_scripts(entry):
+    """Hook scripts under ~/.claude/hooks that an entry calls but that do not exist."""
+    missing = []
+    for h in entry.get("hooks", []):
+        tok = h.get("command", "").split(" ")[0].strip('"')
+        if "/.claude/hooks/" in tok:
+            p = Path(tok.replace("~", str(HOME), 1) if tok.startswith("~") else tok)
+            if not p.exists():
+                missing.append(tok)
+    return missing
+
+
+def _present(entries):
+    """Drops hook entries whose script is missing, so `on` never registers a hook that fails
+    on every event; reports what was skipped."""
+    keep = []
+    for e in entries:
+        missing = _missing_scripts(e)
+        if missing:
+            print(f"  skipped hook, script not installed: {', '.join(missing)}", file=sys.stderr)
+        else:
+            keep.append(e)
+    return keep
+
+
 # ── State detection ──────────────────────────────────────────────────────────
 
 def is_on(tool):
@@ -323,7 +348,7 @@ def enable(tool):
 
     elif tool == "cbm":
         for event in ("PreToolUse", "SessionStart"):
-            entries = saved.get(f"hooks_{event}", DEFAULTS["cbm"].get(f"hooks_{event}", []))
+            entries = _present(saved.get(f"hooks_{event}", DEFAULTS["cbm"].get(f"hooks_{event}", [])))
             if _add_unique(s.setdefault("hooks", {}).setdefault(event, []), entries):
                 mod_s = True
 
@@ -331,7 +356,7 @@ def enable(tool):
         s.setdefault("enabledPlugins", {})[PLUGINS[tool]] = True
         mod_s = True
         if tool == "context-mode":
-            entries = saved.get("hooks_SessionStart", DEFAULTS["context-mode"]["hooks_SessionStart"])
+            entries = _present(saved.get("hooks_SessionStart", DEFAULTS["context-mode"]["hooks_SessionStart"]))
             _add_unique(s.setdefault("hooks", {}).setdefault("SessionStart", []), entries)
 
     if mod_s:  save(SETTINGS, s)

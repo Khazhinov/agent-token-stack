@@ -107,6 +107,15 @@ details stay in `local/JOURNAL.md`.
   `~/.cache/herdr-orch` and the kit cache failed with `Read-only file system`. Both caches are now
   writable; a `write` rule for a missing path is accepted by `codex sandbox`.
 
+## 2026-11-12 - Claude hooks without their scripts
+
+- A fresh Claude Code setup that follows the repository (no vendor CBM installer) got `SessionStart`
+  hooks pointing to `~/.claude/hooks/cbm-session-reminder` after `/stack mode dev`, and
+  `context-mode-cache-heal.mjs` after `on context-mode` from a disabled state: neither script is
+  shipped here, so the hooks failed on every event.
+- The repository now ships `cbm-session-reminder.sh`, silent outside projects with CBM attached.
+  `toggle.py` registers a hook only when its script exists and reports what it skipped.
+
 ## 2026-11-14 - Codex launch and usage audit
 
 Remove unsupported `auto_review.extra_policy`; doctor now validates strict CLI startup. Keep

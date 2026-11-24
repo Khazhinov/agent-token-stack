@@ -130,7 +130,7 @@ A stash in the status line is normal: it lists tools whose configuration is save
 | Binary | `~/.local/bin/codebase-memory-mcp` (shared with other agents) |
 | Repository | https://github.com/DeusData/codebase-memory-mcp |
 | MCP registration | **per project only**: `.mcp.json` in the root of a project with code (template in `docs/STACK.md`). Global registration in `~/.claude.json` and `~/.claude/.mcp.json` is forbidden and removed by `normalize` |
-| Hooks (`on/off cbm`) | `~/.claude/settings.json` -> `hooks.PreToolUse` matcher `Grep\|Glob` (`cbm-code-discovery-gate`, adds to the result, never blocks), `hooks.SessionStart` (`cbm-session-reminder`) |
+| Hooks (`on/off cbm`) | `~/.claude/settings.json` -> `hooks.PreToolUse` matcher `Grep\|Glob` (`cbm-code-discovery-gate`, adds to the result, never blocks), `hooks.SessionStart` (`cbm-session-reminder`). Scripts: `agents/claude-code/hooks/` of the stack repository; `on cbm` skips a hook whose script is missing |
 | Index cache | `~/.cache/codebase-memory-mcp` (shared; never delete) |
 | Version | `codebase-memory-mcp --version` |
 | Update check | `https://api.github.com/repos/DeusData/codebase-memory-mcp/releases/latest` -> `.tag_name` |
@@ -145,7 +145,7 @@ A stash in the status line is normal: it lists tools whose configuration is save
 | Installation | plugin `context-mode@context-mode` (marketplace `mksglu/context-mode`) |
 | Plugin folder | `~/.claude/plugins/cache/context-mode/context-mode/<version>/` |
 | MCP and hooks | declared by the plugin itself; a global `mcpServers.context-mode` in `~/.claude.json` duplicates the server and is removed by `normalize` |
-| Switch | `settings.json` -> `enabledPlugins["context-mode@context-mode"]` + self-heal hook `~/.claude/hooks/context-mode-cache-heal.mjs` (SessionStart) |
+| Switch | `settings.json` -> `enabledPlugins["context-mode@context-mode"]` + optional self-heal hook `~/.claude/hooks/context-mode-cache-heal.mjs` (SessionStart), registered only if the script exists |
 | Version | `installed_plugins.json` -> `plugins["context-mode@context-mode"][0].version`; no `installPath` means BROKEN |
 | Update check | `https://api.github.com/repos/mksglu/context-mode/releases/latest` -> `.tag_name` |
 | Update and reinstall | `toggle.py update apply context-mode` (`claude plugin marketplace update` + `claude plugin update` or `install`), restart Claude Code. A hand-unpacked tarball in `cache/context-mode/<version>` does not work: Claude Code deletes such a folder as unknown |

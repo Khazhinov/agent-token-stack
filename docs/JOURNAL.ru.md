@@ -111,6 +111,15 @@
   `~/.cache/herdr-orch` и кэш kit завершались ошибкой `Read-only file system`. Оба кэша теперь доступны
   для записи; правило `write` для отсутствующего пути `codex sandbox` принимает.
 
+## 2026-11-12 - hooks Claude без своих скриптов
+
+- Новая установка Claude Code по репозиторию (без установщика CBM производителя) после `/stack mode dev`
+  получала hooks `SessionStart` на `~/.claude/hooks/cbm-session-reminder`, а после `on context-mode`
+  из выключенного состояния - на `context-mode-cache-heal.mjs`: этих скриптов в репозитории нет, и
+  hooks падали на каждом событии.
+- Репозиторий теперь содержит `cbm-session-reminder.sh`, который молчит вне проектов с подключённым CBM.
+  `toggle.py` регистрирует hook только при наличии его скрипта и сообщает о пропущенных.
+
 ## 2026-11-14 - аудит запуска и расхода Codex
 
 Удалено неподдерживаемое `auto_review.extra_policy`; doctor строго проверяет запуск CLI. Сохранены

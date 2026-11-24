@@ -11,7 +11,7 @@ TE_KEY = "tokeneconomizer@tokeneconomizer"
 
 class ToggleTest(unittest.TestCase):
     def setUp(self):
-        tmp = tempfile.TemporaryDirectory()
+        tmp = tempfile.TemporaryDirectory(prefix="stack test ")
         self.addCleanup(tmp.cleanup)
         self.home = Path(tmp.name)
         (self.home / ".claude/skills/stack").mkdir(parents=True)
@@ -61,17 +61,70 @@ class ToggleTest(unittest.TestCase):
         return json.loads((self.home / ".claude/settings.json").read_text()).get("hooks", {})
 
     def test_on_skips_hooks_without_scripts(self):
-        self.run_toggle("on", "cbm")
+        self.assertIn("cbm: OFF", self.run_toggle("on", "cbm"))
         self.run_toggle("on", "context-mode")
         self.assertEqual(self.hooks().get("PreToolUse", []), [])
         self.assertEqual(self.hooks().get("SessionStart", []), [])
         hooks = self.home / ".claude/hooks"
         hooks.mkdir()
-        for name in ("cbm-code-discovery-gate", "cbm-session-reminder"):
-            (hooks / name).write_text("#!/bin/sh\n")
+        gate = hooks / "cbm-code-discovery-gate"
+        gate.write_text("#!/bin/sh\n")
+        self.run_toggle("on", "cbm")
+        self.assertEqual(self.hooks().get("PreToolUse", []), [])
+
+        gate.chmod(0o755)
         self.run_toggle("on", "cbm")
         self.assertEqual(len(self.hooks()["PreToolUse"]), 1)
-        self.assertEqual(len(self.hooks()["SessionStart"]), 4)
+        self.assertEqual(self.hooks().get("SessionStart", []), [])
+
+        for name in ("cbm-session-reminder", "context-mode-cache-heal.mjs"):
+            script = hooks / name
+            script.write_text("#!/bin/sh\n")
+            script.chmod(0o755)
+        self.run_toggle("on", "cbm")
+        self.run_toggle("on", "context-mode")
+        self.assertEqual(len(self.hooks()["PreToolUse"]), 1)
+        self.assertEqual(len(self.hooks()["SessionStart"]), 5)
+
+    def test_retries_custom_stashed_hook(self):
+        settings = self.home / ".claude/settings.json"
+        hooks = self.home / ".claude/hooks"
+        hooks.mkdir()
+        script = hooks / "cbm-custom"
+        custom = {"matcher": "resume", "hooks": [
+            {"type": "command", "command": f'"{script}" --custom', "timeout": 3},
+        ]}
+        config = json.loads(settings.read_text())
+        config["hooks"] = {"SessionStart": [custom]}
+        settings.write_text(json.dumps(config))
+        self.run_toggle("off", "cbm")
+        self.run_toggle("on", "cbm")
+        self.assertEqual(self.hooks()["SessionStart"], [])
+
+        script.write_text("#!/bin/sh\n")
+        script.chmod(0o755)
+        self.run_toggle("on", "cbm")
+        self.run_toggle("on", "cbm")
+        self.assertEqual(self.hooks()["SessionStart"], [custom])
+
+    def test_reminder_requires_cbm_registration(self):
+        reminder = TOGGLE.parents[2] / "hooks/cbm-session-reminder.sh"
+        project = self.home / 'project "quoted"'
+        project.mkdir()
+        payload = json.dumps({"cwd": str(project)}, indent=2)
+
+        def run():
+            return subprocess.run([str(reminder)], input=payload, text=True,
+                                  capture_output=True, check=True).stdout
+
+        self.assertEqual(run(), "")
+        config = project / ".mcp.json"
+        config.write_text('{"mcpServers":{"unrelated":{"args":["codebase-memory-mcp"]}}}')
+        self.assertEqual(run(), "")
+        config.write_text("{broken")
+        self.assertEqual(run(), "")
+        config.write_text('{"mcpServers":{"codebase-memory-mcp":{"command":"codebase-memory-mcp"}}}')
+        self.assertIn("start code exploration with index_status", run())
 
 
 if __name__ == "__main__":

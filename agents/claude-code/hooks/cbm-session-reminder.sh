@@ -1,11 +1,20 @@
 #!/bin/bash
-# codebase-memory-mcp reminder (Claude Code SessionStart). Install as
-# ~/.claude/hooks/cbm-session-reminder (the name toggle.py and the CBM installer use).
-# Prints one line into the session only in projects whose .mcp.json attaches CBM;
-# elsewhere it prints nothing, so sessions without code get no extra context.
-payload=$(cat)
-cwd=$(printf '%s' "$payload" | sed -n 's/.*"cwd"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
-[ -n "$cwd" ] || cwd=$PWD
-grep -qs codebase-memory "$cwd/.mcp.json" || exit 0
-echo "codebase-memory-mcp is attached: start code exploration with index_status, then search_graph, get_architecture, trace_path, get_code_snippet; run index_repository if there is no index."
-exit 0
+# Install as ~/.claude/hooks/cbm-session-reminder for the SessionStart event.
+exec python3 -c '
+import json
+import sys
+from pathlib import Path
+
+try:
+    payload = json.load(sys.stdin)
+    cwd = payload.get("cwd") or Path.cwd()
+    with (Path(cwd) / ".mcp.json").open(encoding="utf-8") as config:
+        servers = json.load(config).get("mcpServers")
+except (AttributeError, OSError, TypeError, ValueError):
+    sys.exit(0)
+
+if isinstance(servers, dict) and isinstance(servers.get("codebase-memory-mcp"), dict):
+    print("codebase-memory-mcp is configured: start code exploration with index_status, then "
+          "search_graph, get_architecture, trace_path, get_code_snippet; run index_repository "
+          "if there is no index.")
+'

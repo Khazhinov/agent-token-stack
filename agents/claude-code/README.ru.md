@@ -27,9 +27,9 @@ ln -s "$(pwd)/agents/claude-code/skills/stack" ~/.claude/skills/stack
    `microsoft/TokenEconomizer` + `tokeneconomizer@tokeneconomizer`.
 2. Hook RTK: `rtk init -g` или `/stack on rtk` после установки бинарника.
 3. CBM: общий бинарник (закреплённая установка - в части Codex), `.mcp.json` проекта по образцу
-   `mcp.example.json`, оба hook из `hooks/`: `cbm-gate-early-exit.sh` как
+   `mcp.example.json`, установить оба скрипта из `hooks/` через `install -m 0755`: `cbm-gate-early-exit.sh` как
    `~/.claude/hooks/cbm-code-discovery-gate`, `cbm-session-reminder.sh` как `~/.claude/hooks/cbm-session-reminder`.
-   `/stack on cbm` пропускает hook, скрипт которого не установлен.
+   После установки скриптов выполнить `/stack on cbm`, чтобы добавить hooks, в том числе ранее пропущенные.
 4. Добавить `RULES.md` в `~/.claude/CLAUDE.md` (копией или `@<путь к RULES.md>`).
 5. `/stack normalize`, затем `/stack`. Перезапустить сессию, где помечено.
 

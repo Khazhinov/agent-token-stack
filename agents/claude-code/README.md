@@ -27,9 +27,9 @@ Then:
    `microsoft/TokenEconomizer` + `tokeneconomizer@tokeneconomizer`.
 2. RTK hook: `rtk init -g`, or `/stack on rtk` after the binary is installed.
 3. CBM: shared binary (see the Codex part for the pinned install), `.mcp.json` per project from
-   `mcp.example.json`, both hooks from `hooks/`: `cbm-gate-early-exit.sh` as
+   `mcp.example.json`, install both scripts from `hooks/` with `install -m 0755`: `cbm-gate-early-exit.sh` as
    `~/.claude/hooks/cbm-code-discovery-gate`, `cbm-session-reminder.sh` as `~/.claude/hooks/cbm-session-reminder`.
-   `/stack on cbm` skips a hook whose script is not installed.
+   After installing the scripts, run `/stack on cbm` to register them or retry skipped entries.
 4. Add `RULES.md` to `~/.claude/CLAUDE.md` (copy, or `@<path to RULES.md>`).
 5. `/stack normalize`, then `/stack`. Restart the session where marked.
 

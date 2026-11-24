@@ -5,7 +5,7 @@ Usage: toggle.py [status | on TOOL | off TOOL | mode MODE | update [apply [TOOL|
 Tools: rtk  headroom  cbm  context-mode  caveman  ponytail  te  all
 After third-party installers (CBM updater): toggle.py normalize
 """
-import json, sys, subprocess, re, urllib.request, tempfile, tarfile, os, shutil
+import json, sys, subprocess, re, urllib.request, tempfile, tarfile, os, shutil, shlex
 from pathlib import Path
 
 HOME        = Path.home()
@@ -193,29 +193,23 @@ def _has_keyword(entry, kw):
     return False
 
 
-def _missing_scripts(entry):
-    """Hook scripts under ~/.claude/hooks that an entry calls but that do not exist."""
-    missing = []
-    for h in entry.get("hooks", []):
-        tok = h.get("command", "").split(" ")[0].strip('"')
-        if "/.claude/hooks/" in tok:
-            p = Path(tok.replace("~", str(HOME), 1) if tok.startswith("~") else tok)
-            if not p.exists():
-                missing.append(tok)
-    return missing
+HOOK_EVENTS = {"cbm": ("PreToolUse", "SessionStart"), "context-mode": ("SessionStart",)}
 
 
-def _present(entries):
-    """Drops hook entries whose script is missing, so `on` never registers a hook that fails
-    on every event; reports what was skipped."""
-    keep = []
-    for e in entries:
-        missing = _missing_scripts(e)
-        if missing:
-            print(f"  skipped hook, script not installed: {', '.join(missing)}", file=sys.stderr)
-        else:
-            keep.append(e)
-    return keep
+def _unavailable_scripts(entry):
+    """Check direct commands under the local hooks directory."""
+    for hook in entry.get("hooks", []):
+        try:
+            words = shlex.split(hook.get("command", ""))
+        except ValueError:
+            continue
+        if not words:
+            continue
+        command = words[0]
+        script = HOME / command[2:] if command.startswith("~/") else Path(command)
+        if script.is_relative_to(HOME / ".claude/hooks"):
+            if not script.is_file() or not os.access(script, os.X_OK):
+                yield command
 
 
 # ── State detection ──────────────────────────────────────────────────────────
@@ -346,21 +340,30 @@ def enable(tool):
         mod_s = True
         sh("systemctl --user enable --now headroom-proxy")
 
-    elif tool == "cbm":
-        for event in ("PreToolUse", "SessionStart"):
-            entries = _present(saved.get(f"hooks_{event}", DEFAULTS["cbm"].get(f"hooks_{event}", [])))
-            if _add_unique(s.setdefault("hooks", {}).setdefault(event, []), entries):
-                mod_s = True
-
     elif tool in PLUGINS:
         s.setdefault("enabledPlugins", {})[PLUGINS[tool]] = True
         mod_s = True
-        if tool == "context-mode":
-            entries = _present(saved.get("hooks_SessionStart", DEFAULTS["context-mode"]["hooks_SessionStart"]))
-            _add_unique(s.setdefault("hooks", {}).setdefault("SessionStart", []), entries)
+
+    pending = {}
+    retry = tool in HOOK_EVENTS and is_on(tool)
+    for event in HOOK_EVENTS.get(tool, ()):
+        key = f"hooks_{event}"
+        defaults = [] if retry else DEFAULTS[tool][key]
+        for entry in saved.get(key, defaults):
+            unavailable = list(_unavailable_scripts(entry))
+            if unavailable:
+                scripts = ", ".join(unavailable)
+                print(f"  skipped hook entry, script missing or not executable: {scripts}", file=sys.stderr)
+                pending.setdefault(key, []).append(entry)
+                continue
+            hooks = s.setdefault("hooks", {}).setdefault(event, [])
+            mod_s |= _add_unique(hooks, [entry])
 
     if mod_s:  save(SETTINGS, s)
-    stash.pop(tool, None)
+    if pending:
+        stash[tool] = pending
+    else:
+        stash.pop(tool, None)
     save(STASH, stash)
     return mod_s
 
@@ -469,11 +472,12 @@ def set_mode(mode):
             print(f"  {t}: OFF{suffix}")
         else:
             print(f"  {t}: already OFF")
+    stashed = load(STASH)
     for t in cfg["on"]:
-        if not is_on(t):
+        if not is_on(t) or (t in HOOK_EVENTS and t in stashed):
             enable(t)
             suffix = "  (restart Claude Code)" if t in NEEDS_RESTART else ""
-            print(f"  {t}: ON{suffix}")
+            print(f"  {t}: ON{suffix}" if is_on(t) else f"  {t}: OFF")
         else:
             print(f"  {t}: already ON")
 
@@ -932,16 +936,17 @@ def main():
             print(f"Error: unknown tool '{t}'. Available: {', '.join(TOOLS)}")
             sys.exit(1)
 
+    stashed = load(STASH)
     for t in targets:
         current = is_on(t)
         if action == "off" and current:
             disable(t)
             suffix = "  (restart Claude Code)" if t in NEEDS_RESTART else ""
             print(f"  {t}: OFF{suffix}")
-        elif action == "on" and not current:
+        elif action == "on" and (not current or (t in HOOK_EVENTS and t in stashed)):
             enable(t)
             suffix = "  (restart Claude Code)" if t in NEEDS_RESTART else ""
-            print(f"  {t}: ON{suffix}")
+            print(f"  {t}: ON{suffix}" if is_on(t) else f"  {t}: OFF")
         else:
             state = "ON" if current else "OFF"
             print(f"  {t}: already {state} - unchanged")

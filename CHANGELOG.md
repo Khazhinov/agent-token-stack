@@ -4,8 +4,8 @@
 
 - Claude Code: `hooks/cbm-session-reminder.sh`, the second script `/stack on cbm` registers; it was
   produced only by the forbidden CBM installer.
-- Claude Code: `toggle.py on` skips a hook whose script under `~/.claude/hooks` is missing (CBM
-  hooks, the optional context-mode self-heal hook) instead of registering a hook that fails on every event.
+- Claude Code: `toggle.py on` defers CBM and context-mode hook entries whose scripts are unavailable
+  or lack execute permission. Run `on` again after fixing the scripts.
 
 ## 0.3.0 - 2026-11-14
 

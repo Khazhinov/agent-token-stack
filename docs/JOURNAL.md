@@ -114,7 +114,7 @@ details stay in `local/JOURNAL.md`.
   `context-mode-cache-heal.mjs` after `on context-mode` from a disabled state: neither script is
   shipped here, so the hooks failed on every event.
 - The repository now ships `cbm-session-reminder.sh`, silent outside projects with CBM attached.
-  `toggle.py` registers a hook only when its script exists and reports what it skipped.
+  `toggle.py` reports entries with missing or non-executable scripts and saves them for the next `on`.
 
 ## 2026-11-14 - Codex launch and usage audit
 
